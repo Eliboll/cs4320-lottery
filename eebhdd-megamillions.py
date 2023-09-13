@@ -47,6 +47,49 @@ for _, row in data.iterrows():
 # Calculate the total number of draws in the previous 1 year
 total_draws_1_year = data[data['date'] >= one_year_ago]['date'].count()
 
+# EEBHDD Changes
+
+# Design:
+# Split data into before and after of when the new numbers started appearing
+# find the average frequency of the numbers before the introduction
+# Take that average frequency and apply that to all of the new data
+
+#implementation
+
+# Find the date where 57-75 start appearing
+earliest = one_year_ago
+
+for i in range(57,76):
+    earliest_date = cumulative_frequency[i][0][0]
+    if earliest > earliest_date:
+        earliest = earliest_date
+
+# We know know the earliest dates, lets calculate the average frequency prevouly and add junk data to bring the new numbers to that same average frequency
+
+number_counts = {number: 0 for number in range(1, 57)}
+
+for i in range(1, 57):
+    for date, _ in cumulative_frequency[i]:
+        if date > earliest:
+            break
+        number_counts[i] += 1
+
+# now we know how many of each number before the introduction, lets find the average number and add the junk data
+
+total = 0
+count = 0
+
+for key in list(number_counts.keys()):
+    total += number_counts[key]
+    count += 1
+
+average = round(total / count)
+
+#add the normalizations
+for i in range(57,76):
+    cumulative_frequency[i] = [(earliest, 1) for i in range(average)]
+    number_frequency[i] += average
+
 # Calculate the probability of each number occurring in the previous 1 year
 number_probabilities = {number: freq / total_draws_1_year for number, freq in number_frequency.items()}
 
